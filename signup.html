@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up · Wanga Digital Academy</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #6d28d9; /* dark purple */
+      --accent-dark: #5b21b6;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", sans-serif }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .card {
+      background: var(--card);
+      width: 100%;
+      max-width: 440px;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+      overflow-y: auto;
+      max-height: 95vh;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+    label {
+      display: block;
+      font-size: .85rem;
+      color: var(--text-dim);
+      margin-top: 1rem;
+    }
+    input, select {
+      width: 100%;
+      padding: .65rem;
+      border: none;
+      border-radius: .5rem;
+      margin-top: .35rem;
+      background: #0f172a;
+      color: var(--text);
+    }
+    input:focus, select:focus {
+      outline: 2px solid var(--accent);
+    }
+    .btn {
+      margin-top: 1.6rem;
+      width: 100%;
+      padding: .75rem;
+      border: none;
+      border-radius: .6rem;
+      font-weight: 700;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: var(--accent-dark);
+    }
+    .pwd-wrap {
+      position: relative;
+    }
+    .toggle {
+      position: absolute;
+      right: .8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: .9rem;
+    }
+    .msg {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: .95rem;
+      color: limegreen;
+      font-weight: bold;
+    }
+    .google {
+      background: #fff;
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+    }
+    .google img {
+      width: 18px;
+      height: 18px;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDL0XCaXIB47WGlt8L9R1uGd3JBLs2oxOk",
+      authDomain: "wanga-digital-academy.firebaseapp.com",
+      projectId: "wanga-digital-academy"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const pwd = document.getElementById('password');
+    const toggle = document.getElementById('togglePwd');
+    toggle.onclick = () => {
+      pwd.type = pwd.type === 'password' ? 'text' : 'password';
+      toggle.textContent = pwd.type === 'password' ? 'show' : 'hide';
+    };
+
+    const form = document.getElementById('signup');
+    const msg = document.getElementById('msg');
+    form.onsubmit = async e => {
+      e.preventDefault();
+      msg.textContent = '';
+      const fd = new FormData(form);
+      const data = Object.fromEntries(fd.entries());
+      if (data.password !== data.confirm) {
+        msg.textContent = '❌ Passwords do not match';
+        return;
+      }
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, data.email, data.password);
+        const uid = cred.user.uid;
+        const refCode = `wanga_${uid.slice(0, 6)}`;
+        await setDoc(doc(db, 'users', uid), {
+          ...data,
+          referralCode: refCode,
+          createdAt: new Date().toISOString()
+        });
+        msg.innerHTML = '✅ Signup successful! Redirecting...';
+        setTimeout(() => location.href = "dashboard/student.html", 1000);
+      } catch (err) {
+        msg.textContent = '❌ ' + err.message;
+      }
+    };
+
+    document.getElementById('google').onclick = async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        const cred = await signInWithPopup(auth, provider);
+        const u = cred.user;
+        const uid = u.uid;
+        await setDoc(doc(db, 'users', uid), {
+          fullName: u.displayName || '',
+          email: u.email,
+          referralCode: `wanga_${uid.slice(0, 6)}`,
+          createdAt: new Date().toISOString()
+        }, { merge: true });
+        location.href = "dashboard/student.html";
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h2>Sign Up to Wanga Digital Academy</h2>
+    <form id="signup">
+      <label>Full Name<input name="fullName" required></label>
+      <label>Username<input name="username" required></label>
+      <label>Email<input type="email" name="email" required></label>
+      <div class="pwd-wrap">
+        <label>Password<input type="password" id="password" name="password" required></label>
+        <span id="togglePwd" class="toggle">show</span>
+      </div>
+      <label>Confirm Password<input type="password" name="confirm" required></label>
+      <label>Phone (optional)<input name="phone" type="tel"></label>
+      <label>Date of Birth<input type="date" name="dob"></label>
+      <label>Gender<select name="gender">
+        <option>Prefer not to say</option><option>Male</option><option>Female</option><option>Other</option>
+      </select></label>
+      <label>Country<input name="country" required></label>
+      <label>County / State<input name="county"></label>
+      <label>School<input name="school"></label>
+      <label>Level of Education<select name="level" required>
+        <option>Primary</option><option>Junior High</option><option>Senior High</option><option>College/Uni</option>
+      </select></label>
+      <label>Favourite Subject<select name="subject" required>
+        <option>Mathematics</option><option>Science</option><option>History</option><option>Geography</option><option>ICT</option><option>Languages</option>
+      </select></label>
+      <label>Career Interest<select name="career" required>
+        <option>Engineering</option><option>Medicine</option><option>Business</option><option>Arts</option><option>Sports</option>
+      </select></label>
+      <label>Learning Style<select name="learning">
+        <option>Visual</option><option>Auditory</option><option>Kinesthetic</option><option>Mixed</option>
+      </select></label>
+      <label>Internet Access<select name="internet">
+        <option>Yes</option><option>Limited</option><option>No</option>
+      </select></label>
+      <label>Referral Code (optional)<input name="referral"></label>
+      <button class="btn" type="submit">Create Account</button>
+    </form>
+
+    <button id="google" class="btn google"><img src="https://www.svgrepo.com/download/475656/google-color.svg"> Sign up with Google</button>
+    <p class="msg" id="msg"></p>
+  </div>
+</body>
+</html>
