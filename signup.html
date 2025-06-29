@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up · Wanga Digital Academy</title>
+  <link rel="stylesheet" href="signup.css" />
+  <script type="module" src="firebase.js"></script>
+  <script defer src="signup.js"></script>
+</head>
+<body>
+  <div class="card">
+    <h1>Sign Up to Wanga Digital Academy</h1>
+    <form id="signupForm">
+      <label>Full Name<input name="fullName" required /></label>
+      <label>Username<input name="username" required /></label>
+      <label>Email<input type="email" name="email" required /></label>
+      <label>Phone Number<input name="phone" /></label>
+      <label>Password<input type="password" name="password" required /></label>
+      <label>Confirm Password<input type="password" name="confirm" required /></label>
+      <label>Country<input name="country" required /></label>
+      <label>County / Region<input name="county" /></label>
+      <label>School<input name="school" /></label>
+      <label>Level of Education
+        <select name="level" required>
+          <option>Primary</option>
+          <option>Junior High</option>
+          <option>Senior High</option>
+          <option>College</option>
+          <option>University</option>
+        </select>
+      </label>
+      <label>Favourite Subject
+        <select name="subject" required>
+          <option>Mathematics</option>
+          <option>Science</option>
+          <option>History</option>
+          <option>Geography</option>
+          <option>ICT</option>
+          <option>Languages</option>
+          <option>Art & Design</option>
+        </select>
+      </label>
+      <label>Career Interest
+        <select name="career" required>
+          <option>Doctor</option>
+          <option>Nurse</option>
+          <option>Engineer</option>
+          <option>Teacher</option>
+          <option>Artist</option>
+          <option>Software Developer</option>
+          <option>Musician</option>
+          <option>Business</option>
+          <option>Designer</option>
+          <option>Pilot</option>
+          <option>Writer</option>
+        </select>
+      </label>
+      <label>Referral Code<input name="referral" /></label>
+      <button type="submit" id="signupBtn">Create Account</button>
+    </form><button class="google-btn" id="googleSignup">
+  <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" /> Sign up with Google
+</button>
+
+<p id="msg" class="msg"></p>
+
+  </div>
+</body>
+</html>
