@@ -1,0 +1,65 @@
+/* student.css */
+:root {
+  --bg: #0f172a;
+  --card: #1e1b4b;
+  --accent: #7c3aed;
+  --accent-dark: #6d28d9;
+  --text: #e0e7ff;
+  --text-dim: #c7d2fe;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+}
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3rem;
+  background: var(--card);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 100;
+}
+aside {
+  width: 220px;
+  background: var(--card);
+  padding-top: 3rem;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  transition: transform 0.3s;
+}
+aside.closed {
+  transform: translateX(-100%);
+}
+main {
+  flex: 1;
+  margin-left: 220px;
+  margin-top: 3rem;
+  padding: 1rem;
+}
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-top: 1rem;
+}
+.card {
+  background: var(--card);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
