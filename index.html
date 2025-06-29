@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wanga Digital Academy · Student Dashboard</title>
+  <link rel="stylesheet" href="student.css">
+</head>
+<body>
+  <header>
+    <button id="menuBtn">☰</button>
+    <div id="welcome">Welcome...</div>
+    <button id="logoutBtn">⎋</button>
+  </header>
+
+  <aside id="sidebar" class="closed">
+    <div class="brand">Wanga Digital</div>
+    <nav>
+      <a href="#">Dashboard</a>
+      <a href="../options/profile.html">Profile</a>
+      <a href="../options/ai.html">Ask AI</a>
+      <a href="../options/assignments.html">Assignments</a>
+      <a href="../options/courses.html">Courses</a>
+    </nav>
+  </aside>
+
+  <main id="main">
+    <div id="factBox">💡 Loading tip...</div>
+    <div class="grid">
+      <div class="card"><h3>Courses</h3><p id="coursesCount">0 active</p></div>
+      <div class="card"><h3>Assignments</h3><p id="assignDue">None due</p></div>
+      <div class="card"><h3>Progress</h3><p id="progressTxt">—</p></div>
+      <div class="card"><h3>Coins</h3><p id="coinTracker">🪙 0 Coins</p></div>
+    </div>
+    <footer>© 2025 Wanga Digital Academy</footer>
+  </main>
+
+  <script type="module" src="student.js"></script>
+</body>
+</html>
