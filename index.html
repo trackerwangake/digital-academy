@@ -10,107 +10,120 @@
       theme: {
         extend: {
           colors: {
-            glow: '#00f7ff',
-            darkbg: '#0a0a1a',
-            card: '#1e1e2e'
+            graydark: '#1c1c2c',
+            neonblue: '#00f7ff',
+            neonborder: '#2dd4bf',
+          },
+          boxShadow: {
+            neon: '0 0 20px #00f7ff',
           }
         }
       }
     }
   </script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f1117 0%, #1c1c2c 100%);
+    }
+  </style>
 </head>
-<body class="bg-darkbg text-white font-sans">
-  <div class="min-h-screen p-6">
-    <h1 class="text-3xl font-bold text-glow text-center mb-8 animate-pulse">
-      WANGA USER INFO
+<body class="text-white font-mono">
+
+  <div class="max-w-5xl mx-auto px-4 py-10">
+    <h1 class="text-3xl sm:text-4xl text-center text-neonblue font-bold mb-10 animate-pulse">
+      🚀 WANGA USER INFO
     </h1>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="info-cards">
+    <div id="info-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Cards will be injected here -->
     </div>
 
-    <p class="text-center text-sm text-gray-400 mt-10">
-      Built by Tracker Wanga 🇰🇪 | <span id="timestamp"></span>
-    </p>
+    <footer class="text-center text-gray-400 mt-12 text-sm">
+      Created by Tracker Wanga • <span id="footer-time"></span>
+    </footer>
   </div>
 
   <script>
     async function getUserInfo() {
-      const cards = [];
+      const container = document.getElementById('info-container');
+
+      const addCard = (title, value, icon) => {
+        const card = document.createElement('div');
+        card.className = "bg-graydark p-5 rounded-xl border border-neonborder shadow-neon transition hover:scale-[1.02]";
+        card.innerHTML = `
+          <div class="text-2xl mb-1">${icon}</div>
+          <h2 class="text-lg font-bold text-neonblue mb-1">${title}</h2>
+          <p class="text-sm break-words">${value}</p>
+        `;
+        container.appendChild(card);
+      };
 
       // IP Address
       let ip = "Unavailable";
       try {
-        const res = await fetch('https://api.ipify.org?format=json');
-        const data = await res.json();
-        ip = data.ip;
+        const res = await fetch("https://api.ipify.org?format=json");
+        ip = (await res.json()).ip;
+      } catch {}
+
+      // Location + Weather
+      let location = "Unknown";
+      let weather = "N/A";
+      try {
+        const geo = await fetch("https://ipapi.co/json/").then(r => r.json());
+        location = `${geo.city}, ${geo.region}`;
+        const lat = geo.latitude, lon = geo.longitude;
+        const weatherData = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`).then(r => r.json());
+        weather = `${weatherData.current_weather.temperature}°C, Code ${weatherData.current_weather.weathercode}`;
       } catch {}
 
       // Battery Info
-      let batteryLevel = "Unavailable", isCharging = "Unknown";
       if (navigator.getBattery) {
         const battery = await navigator.getBattery();
-        batteryLevel = Math.round(battery.level * 100) + '%';
-        isCharging = battery.charging ? "Yes" : "No";
+        const level = Math.round(battery.level * 100);
+        const charging = battery.charging ? "Charging" : "Not Charging";
+        addCard("Battery", `${level}% - ${charging}`, "🔋");
+      } else {
+        addCard("Battery", "Battery API not supported", "🔋");
       }
 
-      // Network
-      let connection = navigator.connection || {};
-      let netType = connection.effectiveType || "Unknown";
+      // Network Info
+      const connection = navigator.connection || {};
+      const net = connection.effectiveType || "Unknown";
+      addCard("Network", net.toUpperCase(), "📶");
 
-      // User Agent Info
-      const ua = navigator.userAgent;
-      const platform = navigator.platform;
-      const language = navigator.language;
-      const screenRes = `${screen.width}x${screen.height}`;
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // IP
+      addCard("Public IP", ip, "🌐");
 
-      // Weather via IP-based location
-      let city = "Unknown", temp = "N/A", condition = "N/A";
-      try {
-        const geo = await fetch('https://ipapi.co/json/').then(res => res.json());
-        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${geo.latitude}&longitude=${geo.longitude}&current_weather=true`);
-        const weatherData = await weatherRes.json();
-        city = geo.city + ", " + geo.region;
-        temp = weatherData.current_weather.temperature + "°C";
-        condition = weatherData.current_weather.weathercode;
-      } catch {}
+      // Location
+      addCard("Location", location, "📍");
 
-      // Fingerprint (simple hash)
-      const fingerprint = btoa(ua + language + screenRes).slice(0, 12);
+      // Weather
+      addCard("Weather", weather, "🌦️");
 
-      // Cards
-      const info = [
-        { title: "IP Address", value: ip, icon: "🌍" },
-        { title: "Device", value: platform, icon: "📱" },
-        { title: "Browser", value: ua, icon: "🌐" },
-        { title: "Screen", value: screenRes, icon: "🖥️" },
-        { title: "Battery", value: `${batteryLevel} (${isCharging})`, icon: "🔋" },
-        { title: "Network Type", value: netType, icon: "📶" },
-        { title: "Language", value: language, icon: "🗣️" },
-        { title: "Timezone", value: timezone, icon: "🕓" },
-        { title: "Location", value: city, icon: "📍" },
-        { title: "Weather", value: `${temp} - ${condition}`, icon: "🌦️" },
-        { title: "Fingerprint", value: fingerprint, icon: "🧠" }
-      ];
+      // Screen Resolution
+      addCard("Screen Size", `${screen.width} x ${screen.height}`, "🖥️");
 
-      // Render
-      const container = document.getElementById('info-cards');
-      info.forEach(i => {
-        const card = document.createElement('div');
-        card.className = "bg-card p-5 rounded-xl shadow-lg border border-glow hover:scale-105 transition";
-        card.innerHTML = `
-          <div class="text-3xl mb-2">${i.icon}</div>
-          <h2 class="text-lg font-semibold text-glow">${i.title}</h2>
-          <p class="break-words text-sm mt-1">${i.value}</p>
-        `;
-        container.appendChild(card);
-      });
+      // Platform
+      addCard("Platform", navigator.platform, "📱");
 
-      document.getElementById("timestamp").innerText = new Date().toLocaleString();
+      // User Agent
+      addCard("Browser", navigator.userAgent, "🧭");
+
+      // Language
+      addCard("Language", navigator.language, "🗣️");
+
+      // Timezone
+      addCard("Timezone", Intl.DateTimeFormat().resolvedOptions().timeZone, "🕒");
+
+      // Simple Fingerprint
+      const fingerprint = btoa(navigator.userAgent + navigator.language + screen.width).substring(0, 12);
+      addCard("Fingerprint", fingerprint, "🧠");
+
+      // Footer time
+      document.getElementById("footer-time").textContent = new Date().toLocaleString();
     }
 
     getUserInfo();
   </script>
 </body>
-  </html>
+                                   </html>
