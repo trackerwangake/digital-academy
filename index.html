@@ -3,38 +3,114 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Wanga Digital Academy · Student Dashboard</title>
-  <link rel="stylesheet" href="student.css">
+  <title>WANGA USER INFO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            glow: '#00f7ff',
+            darkbg: '#0a0a1a',
+            card: '#1e1e2e'
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
-  <header>
-    <button id="menuBtn">☰</button>
-    <div id="welcome">Welcome...</div>
-    <button id="logoutBtn">⎋</button>
-  </header>
+<body class="bg-darkbg text-white font-sans">
+  <div class="min-h-screen p-6">
+    <h1 class="text-3xl font-bold text-glow text-center mb-8 animate-pulse">
+      WANGA USER INFO
+    </h1>
 
-  <aside id="sidebar" class="closed">
-    <div class="brand">Wanga Digital</div>
-    <nav>
-      <a href="#">Dashboard</a>
-      <a href="../options/profile.html">Profile</a>
-      <a href="../options/ai.html">Ask AI</a>
-      <a href="../options/assignments.html">Assignments</a>
-      <a href="../options/courses.html">Courses</a>
-    </nav>
-  </aside>
-
-  <main id="main">
-    <div id="factBox">💡 Loading tip...</div>
-    <div class="grid">
-      <div class="card"><h3>Courses</h3><p id="coursesCount">0 active</p></div>
-      <div class="card"><h3>Assignments</h3><p id="assignDue">None due</p></div>
-      <div class="card"><h3>Progress</h3><p id="progressTxt">—</p></div>
-      <div class="card"><h3>Coins</h3><p id="coinTracker">🪙 0 Coins</p></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="info-cards">
+      <!-- Cards will be injected here -->
     </div>
-    <footer>© 2025 Wanga Digital Academy</footer>
-  </main>
 
-  <script type="module" src="student.js"></script>
+    <p class="text-center text-sm text-gray-400 mt-10">
+      Built by Tracker Wanga 🇰🇪 | <span id="timestamp"></span>
+    </p>
+  </div>
+
+  <script>
+    async function getUserInfo() {
+      const cards = [];
+
+      // IP Address
+      let ip = "Unavailable";
+      try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        ip = data.ip;
+      } catch {}
+
+      // Battery Info
+      let batteryLevel = "Unavailable", isCharging = "Unknown";
+      if (navigator.getBattery) {
+        const battery = await navigator.getBattery();
+        batteryLevel = Math.round(battery.level * 100) + '%';
+        isCharging = battery.charging ? "Yes" : "No";
+      }
+
+      // Network
+      let connection = navigator.connection || {};
+      let netType = connection.effectiveType || "Unknown";
+
+      // User Agent Info
+      const ua = navigator.userAgent;
+      const platform = navigator.platform;
+      const language = navigator.language;
+      const screenRes = `${screen.width}x${screen.height}`;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      // Weather via IP-based location
+      let city = "Unknown", temp = "N/A", condition = "N/A";
+      try {
+        const geo = await fetch('https://ipapi.co/json/').then(res => res.json());
+        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${geo.latitude}&longitude=${geo.longitude}&current_weather=true`);
+        const weatherData = await weatherRes.json();
+        city = geo.city + ", " + geo.region;
+        temp = weatherData.current_weather.temperature + "°C";
+        condition = weatherData.current_weather.weathercode;
+      } catch {}
+
+      // Fingerprint (simple hash)
+      const fingerprint = btoa(ua + language + screenRes).slice(0, 12);
+
+      // Cards
+      const info = [
+        { title: "IP Address", value: ip, icon: "🌍" },
+        { title: "Device", value: platform, icon: "📱" },
+        { title: "Browser", value: ua, icon: "🌐" },
+        { title: "Screen", value: screenRes, icon: "🖥️" },
+        { title: "Battery", value: `${batteryLevel} (${isCharging})`, icon: "🔋" },
+        { title: "Network Type", value: netType, icon: "📶" },
+        { title: "Language", value: language, icon: "🗣️" },
+        { title: "Timezone", value: timezone, icon: "🕓" },
+        { title: "Location", value: city, icon: "📍" },
+        { title: "Weather", value: `${temp} - ${condition}`, icon: "🌦️" },
+        { title: "Fingerprint", value: fingerprint, icon: "🧠" }
+      ];
+
+      // Render
+      const container = document.getElementById('info-cards');
+      info.forEach(i => {
+        const card = document.createElement('div');
+        card.className = "bg-card p-5 rounded-xl shadow-lg border border-glow hover:scale-105 transition";
+        card.innerHTML = `
+          <div class="text-3xl mb-2">${i.icon}</div>
+          <h2 class="text-lg font-semibold text-glow">${i.title}</h2>
+          <p class="break-words text-sm mt-1">${i.value}</p>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById("timestamp").innerText = new Date().toLocaleString();
+    }
+
+    getUserInfo();
+  </script>
 </body>
-</html>
+  </html>
